@@ -9,6 +9,7 @@ from protocolo import (
     decodificar_pacote, decifrar_mensagem, extrair_chave_publica
 )
 
+
 PORTA_A  = 8001
 PORTA_B  = 8002
 NOME     = 'A'
@@ -87,7 +88,7 @@ def main():
     chave_publica, chave_privada = gerar_chaves(bits=512)
     print(f'[{NOME}] Chaves geradas.')
     print(f'[{NOME}] Servidor HTTP em http://localhost:{PORTA_A}')
-    print(f'[{NOME}] Aguardando handshake de B...\n')
+    print(f'[{NOME}] Aguardando conexao de B...\n')
 
     servidor = HTTPServer(('localhost', PORTA_A), ManipuladorA)
     thread_servidor = threading.Thread(target=servidor.serve_forever, daemon=True)
