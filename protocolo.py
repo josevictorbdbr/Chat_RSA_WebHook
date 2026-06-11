@@ -1,5 +1,6 @@
 import json
 from rsa import cifrar_rsa, decifrar_rsa, serializar_chave, deserializar_chave
+from sha256 import sha256_hex
 
 
 TIPO_CHAVE    = 'CHAVE_PUBLICA'
@@ -67,12 +68,15 @@ def montar_pacote_ok():
 
 
 def montar_pacote_mensagem(texto, chave_publica_destino):
+    hash_mensagem = sha256_hex(texto.encode('utf-8'))
+
     cifrado = cifrar_rsa(texto.encode('utf-8'), chave_publica_destino)
     dados_b64 = _b64_encode(cifrado)
 
     return json.dumps({
         'tipo': TIPO_MENSAGEM,
-        'dados': dados_b64
+        'dados': dados_b64,
+        'hash': hash_mensagem
     })
 
 
@@ -82,7 +86,16 @@ def decodificar_pacote(raw):
 
 def decifrar_mensagem(pacote, chave_privada):
     cifrado = _b64_decode(pacote['dados'])
-    return decifrar_rsa(cifrado, chave_privada).decode('utf-8')
+
+    texto = decifrar_rsa(cifrado, chave_privada).decode('utf-8')
+
+    hash_recebido = pacote['hash']
+    hash_calculado = sha256_hex(texto.encode('utf-8'))
+
+    if hash_recebido != hash_calculado:
+        raise ValueError('Integridade comprometida')
+
+    return texto
 
 
 def extrair_chave_publica(pacote):
